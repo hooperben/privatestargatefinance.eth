@@ -1,8 +1,11 @@
+import "dotenv/config";
+
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import "@typechain/hardhat";
 import "@nomicfoundation/hardhat-ethers";
 import "@nomicfoundation/hardhat-chai-matchers";
+import "hardhat-deploy";
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -44,6 +47,16 @@ const config: HardhatUserConfig = {
         auto: true,
         interval: 0,
       },
+    },
+    arbitrumOne: {
+      url: `https://arb-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
+      accounts: [process.env.PRIVATE_KEY!],
+      saveDeployments: true,
+    },
+    base: {
+      url: `https://base-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
+      accounts: [process.env.PRIVATE_KEY!],
+      saveDeployments: true,
     },
   },
   mocha: {
