@@ -7,14 +7,14 @@ import withdrawCircuit from "../../../circuits/withdraw/target/withdraw.json";
 import { loadPoseidon } from "../utils/poseidon";
 
 interface InputNote {
-  asset_id: bigint;
-  asset_amount: bigint;
-  owner: bigint;
-  owner_secret: bigint;
-  secret: bigint;
-  leaf_index: bigint;
-  siblings: bigint[];
-  indices: bigint[];
+  asset_id: bigint | string;
+  asset_amount: bigint | string;
+  owner: bigint | string;
+  owner_secret: bigint | string;
+  secret: bigint | string;
+  leaf_index: bigint | string;
+  path: bigint[] | string[];
+  path_indices: bigint[] | string[];
 }
 
 export function WithdrawButton() {
@@ -31,117 +31,120 @@ export function WithdrawButton() {
       const poseidonHash = await loadPoseidon();
 
       // Mock data similar to withdraw test
-      const assetId = "0x1234567890123456789012345678901234567890";
+      const assetId = "1096978651789611665652906124278561787240579697095";
       const bobOwnerSecret =
-        6955001134965379637962992480442037189090898019061077075663294923529403402038n;
-      const bobOwner = BigInt(
-        (await poseidonHash([bobOwnerSecret])).toString(),
-      );
-      const bobAmount = 2n;
+        "6955001134965379637962992480442037189090898019061077075663294923529403402038";
+      const bobOwner = poseidonHash([BigInt(bobOwnerSecret)]).toString();
+      const bobAmount = "2";
       const bobSecret =
-        3957740128091467064337395812164919758932045173069261808814882570720300029469n;
+        "3957740128091467064337395812164919758932045173069261808814882570720300029469";
 
       // Create Bob's input note to withdraw
       const bobInputNote: InputNote = {
-        asset_id: BigInt(assetId),
+        asset_id: BigInt(assetId).toString(),
         asset_amount: bobAmount,
         owner: bobOwner,
         owner_secret: bobOwnerSecret,
         secret: bobSecret,
-        leaf_index: 2n,
-        siblings: [
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
+        leaf_index: "2",
+        path: [
+          "13640659629327953230197633652529006805891215582818597888084863207147219313784",
+          "18380261439356865501884569257940638985761619337694138929913102368174989083576",
+          "16054022188397161938956278061878851932956033792728066452148841350372709856325",
+          "5088416905632566847489144423785449560596474956704206833561295200206123281740",
+          "7133742548945823648162717112853949322814446130740022056636610844051076979955",
+          "15996976533936258369996214630141201173712053425083354410411158951568838211277",
+          "12856765864455281126306545538308148448222111081433610923407492298111988109924",
+          "4407863489559565071205165471845081321675763465852502126771740970311657294198",
+          "20448284296610764092326252358036828964180135505542140040145855516028834425624",
+          "7022843789375185322738689530892530453984779704784378294646894048972162829679",
+          "10906054357754859492130109809751867122631984061959461434096281674698176679467",
         ],
-        indices: [
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-          0n,
-        ],
+        path_indices: ["1", "0", "1", "1", "1", "1", "1", "1", "1", "1", "1"],
       };
 
       // Calculate nullifier for input note
-      const nullifier = await poseidonHash([
-        bobInputNote.leaf_index,
-        bobInputNote.owner,
-        bobInputNote.secret,
-        bobInputNote.asset_id,
-        bobInputNote.asset_amount,
+      const nullifier = poseidonHash([
+        BigInt(bobInputNote.leaf_index),
+        BigInt(bobInputNote.owner),
+        BigInt(bobInputNote.secret),
+        BigInt(bobInputNote.asset_id),
+        BigInt(bobInputNote.asset_amount),
       ]);
 
       // Mock withdrawal address (from test: Signers[9].address)
       const withdrawAddress = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"; // Mock address
-      const withdrawAddressHash = await poseidonHash([BigInt(withdrawAddress)]);
+      const withdrawAddressHash = poseidonHash([BigInt(withdrawAddress)]);
 
       // Mock empty notes for unused slots
       const emptyInputNote = {
-        asset_id: 0n,
-        asset_amount: 0n,
-        owner: 0n,
-        owner_secret: 0n,
-        secret: 0n,
-        leaf_index: 0n,
-        siblings: Array(20).fill(0n),
-        indices: Array(20).fill(0n),
+        asset_id: "0",
+        asset_amount: "0",
+        owner: "0",
+        owner_secret: "0",
+        secret: "0",
+        leaf_index: "0",
+        siblings: Array(11).fill("0"),
+        indices: Array(11).fill("0"),
       };
 
       // Execute the circuit with withdraw inputs
       const { witness } = await noir.execute({
         // Mock tree root
-        root: "0x1234567890123456789012345678901234567890123456789012345678901234",
+        root: "9770762522284292133040204594656801249089743659015207279808423545223243067226",
 
-        // Input notes (3 slots, first one used)
-        input_notes: [bobInputNote, emptyInputNote, emptyInputNote],
+        // Input notes (3 slots, first one used) - convert to strings
+        input_notes: [
+          {
+            asset_id: bobInputNote.asset_id.toString(),
+            asset_amount: bobInputNote.asset_amount.toString(),
+            owner: bobInputNote.owner.toString(),
+            owner_secret: bobInputNote.owner_secret.toString(),
+            secret: bobInputNote.secret.toString(),
+            leaf_index: bobInputNote.leaf_index.toString(),
+            path: bobInputNote.path.map((s) => s.toString()),
+            path_indices: bobInputNote.path_indices.map((i) => i.toString()),
+          },
+          {
+            asset_id: emptyInputNote.asset_id.toString(),
+            asset_amount: emptyInputNote.asset_amount.toString(),
+            owner: emptyInputNote.owner.toString(),
+            owner_secret: emptyInputNote.owner_secret.toString(),
+            secret: emptyInputNote.secret.toString(),
+            leaf_index: emptyInputNote.leaf_index.toString(),
+            path: emptyInputNote.siblings.map((s) => s.toString()),
+            path_indices: emptyInputNote.indices.map((i) => i.toString()),
+          },
+          {
+            asset_id: emptyInputNote.asset_id.toString(),
+            asset_amount: emptyInputNote.asset_amount.toString(),
+            owner: emptyInputNote.owner.toString(),
+            owner_secret: emptyInputNote.owner_secret.toString(),
+            secret: emptyInputNote.secret.toString(),
+            leaf_index: emptyInputNote.leaf_index.toString(),
+            path: emptyInputNote.siblings.map((s) => s.toString()),
+            path_indices: emptyInputNote.indices.map((i) => i.toString()),
+          },
+        ],
 
-        // Nullifiers
-        nullifiers: [BigInt(nullifier.toString()), 0n, 0n],
+        // Nullifiers - convert to strings
+        nullifiers: [BigInt(nullifier.toString()).toString(), "0", "0"],
 
-        // Exit assets (what assets to withdraw)
-        exit_assets: [BigInt(assetId), 0n, 0n],
+        // Exit assets (what assets to withdraw) - convert to strings
+        exit_assets: [BigInt(assetId).toString(), "0", "0"],
 
-        // Exit amounts
-        exit_amounts: [bobAmount, 0n, 0n],
+        // Exit amounts - convert to strings
+        exit_amounts: [bobAmount.toString(), "0", "0"],
 
-        // Exit addresses (where to send the withdrawn tokens)
-        exit_addresses: [BigInt(withdrawAddress), 0n, 0n],
+        // Exit addresses (where to send the withdrawn tokens) - convert to strings
+        exit_addresses: [BigInt(withdrawAddress).toString(), "0", "0"],
 
-        // Exit address hashes
-        exit_address_hashes: [BigInt(withdrawAddressHash.toString()), 0n, 0n],
+        // Exit address hashes - convert to strings
+        exit_address_hashes: [
+          BigInt(withdrawAddressHash.toString()).toString(),
+          "0",
+          "0",
+        ],
       });
 
       console.log("Withdraw witness: ", witness);
