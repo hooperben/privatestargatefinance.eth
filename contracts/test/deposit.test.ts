@@ -1,5 +1,6 @@
 import { approve } from "@/helpers/functions/approve";
 import { getDepositDetails } from "@/helpers/functions/deposit";
+import { createDepositPayload } from "@/helpers/functions/transfer";
 import { getTestingAPI } from "@/helpers/get-testing-api";
 import { PoseidonMerkleTree } from "@/helpers/poseidon-merkle-tree";
 import { PrivateStargateFinance, USDC } from "@/typechain-types";
@@ -54,13 +55,24 @@ describe("Testing deposit functionality", () => {
       Signers[0].address,
     );
 
+    // create encrypted payload for the deposited note
+    const depositPayload = await createDepositPayload(
+      {
+        secret,
+        owner: owner.toString(),
+        asset_id: assetId,
+        asset_amount: assetAmount.toString(),
+      },
+      Signers[0],
+    );
+
     // call the deposit TX
     await privateStargateFinance.deposit(
       assetId,
       assetAmount,
       proof.proof,
       proof.publicInputs,
-      "0x",
+      depositPayload,
     );
 
     const usdcBalanceAfter = await usdcDeployment.balanceOf(Signers[0].address);

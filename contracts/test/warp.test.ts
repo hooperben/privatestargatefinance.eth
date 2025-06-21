@@ -8,9 +8,15 @@ import { approve } from "@/helpers/functions/approve";
 import { getDepositDetails } from "@/helpers/functions/deposit";
 import { getNoteHash } from "@/helpers/functions/get-note-hash";
 import { getNullifier } from "@/helpers/functions/get-nullifier";
-import { getTransferDetails, transfer } from "@/helpers/functions/transfer";
+import {
+  createDepositPayload,
+  encodeEncryptedPayload,
+  getTransferDetails,
+  transfer,
+} from "@/helpers/functions/transfer";
 import { getWarpDetails } from "@/helpers/functions/warp";
 import { getTestingAPI } from "@/helpers/get-testing-api";
+import { NoteEncryption } from "@/helpers/note-sharing";
 import { PoseidonMerkleTree } from "@/helpers/poseidon-merkle-tree";
 import { REMOTE_EID } from "@/helpers/test-suite/deploy-mock-tokens";
 import { LZOFT, PrivateStargateFinance } from "@/typechain-types";
@@ -70,12 +76,24 @@ describe("Testing Warp functionality", () => {
       await privateStargateFinance.getAddress(),
       parseUnits(assetAmount.toString(), 18),
     );
+
+    // create encrypted payload for the deposited note
+    const depositPayload = await createDepositPayload(
+      {
+        secret,
+        owner: owner.toString(),
+        asset_id: assetId,
+        asset_amount: assetAmount.toString(),
+      },
+      Signers[0],
+    );
+
     await privateStargateFinance.deposit(
       assetId,
       assetAmount,
       depositProof.proof,
       depositProof.publicInputs,
-      "0x",
+      depositPayload,
     );
     await tree.insert(depositProof.publicInputs[0], 0);
 
@@ -204,6 +222,33 @@ describe("Testing Warp functionality", () => {
       ["0", "0x" + BigInt(bobOutputNote2.asset_amount).toString(16), "0"],
     );
 
+    // create encrypted payloads for the output notes
+    const bobNote1Encrypted = await NoteEncryption.createEncryptedNote(
+      {
+        secret: bobOutputNote1.secret,
+        owner: bobOwner,
+        asset_id: assetId,
+        asset_amount: bobOutputNote1.asset_amount.toString(),
+      },
+      Signers[1], // Bob's signer
+    );
+
+    const bobNote2Encrypted = await NoteEncryption.createEncryptedNote(
+      {
+        secret: bobOutputNote2.secret,
+        owner: bobOwner,
+        asset_id: assetId,
+        asset_amount: bobOutputNote2.asset_amount.toString(),
+      },
+      Signers[1], // Bob's signer
+    );
+
+    const warpPayload = await encodeEncryptedPayload([
+      bobNote1Encrypted,
+      bobNote2Encrypted,
+      "0x",
+    ]);
+
     const lzOFTDeploymentRemoteBalanceBefore =
       await lzOFTDeploymentRemote.balanceOf(await remotePSF.getAddress());
 
@@ -212,6 +257,7 @@ describe("Testing Warp functionality", () => {
       warpProof.proof,
       warpProof.publicInputs,
       options,
+      warpPayload,
       {
         value: nativeFee * 3n, // TODO fix
       },

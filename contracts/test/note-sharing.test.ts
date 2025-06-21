@@ -32,7 +32,7 @@ describe("Testing Withdraw functionality", () => {
       await getTestingAPI());
   });
 
-  it.only("should let me encrypt and decrypt", async () => {
+  it("should let me encrypt and decrypt", async () => {
     // Create wallets (signers)
     const alice = new Wallet(
       "0x1234567890123456789012345678901234567890123456789012345678901234",

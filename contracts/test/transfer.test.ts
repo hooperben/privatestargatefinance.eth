@@ -8,8 +8,13 @@ import { approve } from "@/helpers/functions/approve";
 import { getDepositDetails } from "@/helpers/functions/deposit";
 import { getNoteHash } from "@/helpers/functions/get-note-hash";
 import { getNullifier } from "@/helpers/functions/get-nullifier";
-import { getTransferDetails, transfer } from "@/helpers/functions/transfer";
+import {
+  createDepositPayload,
+  getTransferDetails,
+  transfer,
+} from "@/helpers/functions/transfer";
 import { getTestingAPI } from "@/helpers/get-testing-api";
+import { NoteEncryption } from "@/helpers/note-sharing";
 import { PoseidonMerkleTree } from "@/helpers/poseidon-merkle-tree";
 import { PrivateStargateFinance, USDC } from "@/typechain-types";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
@@ -53,12 +58,24 @@ describe("Testing Transfer functionality", () => {
       await privateStargateFinance.getAddress(),
       parseUnits("5", 6),
     );
+
+    // create encrypted payload for the deposited note
+    const depositPayload = await createDepositPayload(
+      {
+        secret,
+        owner: owner.toString(),
+        asset_id: assetId,
+        asset_amount: assetAmount.toString(),
+      },
+      Signers[0],
+    );
+
     await privateStargateFinance.deposit(
       assetId,
       assetAmount,
       depositProof.proof,
       depositProof.publicInputs,
-      "0x",
+      depositPayload,
     );
     await tree.insert(depositProof.publicInputs[0], 0);
 
@@ -130,7 +147,23 @@ describe("Testing Transfer functionality", () => {
       outputHashes,
     );
 
-    await transfer(privateStargateFinance, transferProof, Signers[10]);
+    const aliceEncrypteddNote = await NoteEncryption.createEncryptedNote(
+      aliceOutputNote,
+      Signers[0],
+    );
+    console.log("Encrypted note:", aliceEncrypteddNote);
+
+    const bobEncryptedNote = await NoteEncryption.createEncryptedNote(
+      bobOutputNote,
+      Signers[1],
+    );
+    console.log("Encrypted note:", bobEncryptedNote);
+
+    await transfer(privateStargateFinance, transferProof, Signers[10], [
+      aliceEncrypteddNote,
+      bobEncryptedNote,
+      "0x",
+    ]);
 
     await tree.insert(aliceOutputHash.toString(), 1);
     await tree.insert(bobOutputHash.toString(), 2);

@@ -36,6 +36,7 @@ contract PrivateStargateFinance is
     mapping(address => bool) public availableOFTs;
 
     event NullifierUsed(uint256 indexed nullifier);
+    event NotePayload(bytes encryptedNote);
 
     constructor(
         address _endpoint,
@@ -59,7 +60,7 @@ contract PrivateStargateFinance is
         uint64 _amount, // !dev no exponent here
         bytes calldata _proof,
         bytes32[] calldata _publicInputs,
-        bytes calldata _payload // TODO make this real
+        bytes[] calldata _payload
     ) public onlyRole(DEPOSIT_ROLE) {
         uint8 decimals = ERC20(_erc20).decimals();
         bool depositTransfer = ERC20(_erc20).transferFrom(
@@ -85,11 +86,19 @@ contract PrivateStargateFinance is
 
         // INSERT NOTE INTO TREE
         _insert(uint256(_publicInputs[0]));
+
+        // emit payload note parameters
+        for (uint256 i = 0; i < 3 && i < _payload.length; i++) {
+            if (_payload[i].length != 0) {
+                emit NotePayload(_payload[i]);
+            }
+        }
     }
 
     function transfer(
         bytes calldata _proof,
-        bytes32[] calldata _publicInputs
+        bytes32[] calldata _publicInputs,
+        bytes[] calldata _payload
     ) public {
         // verify the root is in the trees history
         require(isKnownRoot(uint256(_publicInputs[0])), "Invalid Root!");
@@ -121,6 +130,13 @@ contract PrivateStargateFinance is
         ) {
             if (_publicInputs[i] != bytes32(0)) {
                 _insert(uint256(_publicInputs[i]));
+            }
+        }
+
+        // emit payload note parameters
+        for (uint256 i = 0; i < 3 && i < _payload.length; i++) {
+            if (_payload[i].length != 0) {
+                emit NotePayload(_payload[i]);
             }
         }
     }
@@ -182,7 +198,8 @@ contract PrivateStargateFinance is
         uint32 _dstEid,
         bytes calldata _proof,
         bytes32[] calldata _publicInputs,
-        bytes calldata _options
+        bytes calldata _options,
+        bytes[] calldata _payload
     ) public payable {
         // verify root is in the history of the tree
         require(isKnownRoot(uint256(_publicInputs[0])), "Invalid Root!");
@@ -222,10 +239,10 @@ contract PrivateStargateFinance is
         uint256[] memory finalNotes = _extractOutputHashes(_publicInputs);
 
         // send the note hashes to insert through LZ
-        bytes memory _payload = abi.encode(finalNotes);
+        bytes memory lzPayload = abi.encode(finalNotes);
         _lzSend(
             _dstEid,
-            _payload,
+            lzPayload,
             _options,
             // Fee in native gas and ZRO token.
             MessagingFee(msg.value, 0),
@@ -238,6 +255,13 @@ contract PrivateStargateFinance is
 
         // send the stargate assets to the PSF on the remote chain
         _sendStargateAssets(_dstEid, peer, _publicInputs, _options);
+
+        // emit payload note parameters
+        for (uint256 i = 0; i < 3 && i < _payload.length; i++) {
+            if (_payload[i].length != 0) {
+                emit NotePayload(_payload[i]);
+            }
+        }
     }
 
     function addSupportedOFT(
