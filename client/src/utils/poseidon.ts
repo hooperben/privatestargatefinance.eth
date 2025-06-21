@@ -8,7 +8,7 @@ export const loadPoseidon = async (): Promise<Poseidon2Hash> => {
     // Return a wrapper that matches the expected interface
     return (inputs: bigint[]) => {
       const result = poseidon2Hash(inputs);
-      return { toString: () => result.toString() };
+      return result.toString();
     };
   } catch (error) {
     console.error("Failed to load poseidon hash:", error);
