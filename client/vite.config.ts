@@ -11,4 +11,19 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    fs: {
+      allow: [".."],
+    },
+  },
+  worker: {
+    format: "es",
+  },
+  define: {
+    global: "globalThis",
+  },
+  optimizeDeps: {
+    esbuildOptions: { target: "esnext" },
+    exclude: ["@noir-lang/noirc_abi", "@noir-lang/acvm_js"],
+  },
 });
