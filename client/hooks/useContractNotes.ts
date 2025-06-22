@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { ethers } from "ethers";
 import { OAPP_ADDRESS } from "../src/constants";
 import { usePasskey } from "./usePasskey";
-import { poseidon2Hash } from "@zkpassport/poseidon2";
 import { TOKENS } from "../lib/tokens";
 
 // ABI for the events we need

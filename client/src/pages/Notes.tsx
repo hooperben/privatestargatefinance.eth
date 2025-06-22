@@ -115,7 +115,7 @@ export function Notes() {
               Encrypted Notes
             </h1>
             <p className="text-gray-600 mt-1">
-              Notes from LeafInserted events on-chain
+              Notes from Leaf Inserted events on-chain
             </p>
           </div>
 
@@ -296,7 +296,7 @@ export function Notes() {
                       }`
                     : showOnlyOwned
                     ? "No notes found that belong to you. Try creating an encrypted deposit or toggle to 'All Notes'."
-                    : "No LeafInserted events found on the blockchain yet."}
+                    : "No Leaf Inserted events found on the blockchain yet."}
                 </p>
               </div>
             ) : (

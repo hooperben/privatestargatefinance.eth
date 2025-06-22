@@ -1,5 +1,5 @@
 import { http, createConfig } from "wagmi";
-import { arbitrum, optimism } from "wagmi/chains";
+import { arbitrum, base } from "wagmi/chains";
 import {
   walletConnect,
   injected,
@@ -11,7 +11,7 @@ import {
 const projectId = "YOUR_PROJECT_ID";
 
 export const config = createConfig({
-  chains: [arbitrum, optimism],
+  chains: [arbitrum, base],
   connectors: [
     injected(),
     metaMask(),
@@ -32,7 +32,7 @@ export const config = createConfig({
   ],
   transports: {
     [arbitrum.id]: http(),
-    [optimism.id]: http(),
+    [base.id]: http(),
   },
 });
 

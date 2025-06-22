@@ -1,6 +1,7 @@
 "use client";
 
 import { ethers } from "ethers";
+import { QrCodeIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { usePasskey } from "../../hooks/usePasskey";
@@ -8,6 +9,7 @@ import type { TokenBalance } from "../../hooks/useTokenBalances";
 import { useTokenBalances } from "../../hooks/useTokenBalances";
 import { EncryptModal } from "../components/EncryptModal";
 import { ReceiveModal } from "../components/ReceiveModal";
+import { UnauthorizedBanner } from "../components/UnauthorizedBanner";
 import { WalletConnect } from "../components/WalletConnect";
 import { Skeleton } from "../components/ui/skeleton";
 import {
@@ -18,10 +20,12 @@ import {
   TableHeader,
   TableRow,
 } from "../components/ui/table";
+import { useDepositRole } from "../hooks/useDepositRole";
 
 export function Account() {
   const { address, isConnected } = useAccount();
   const { balances, loading } = useTokenBalances();
+  const { hasDepositRole, loading: roleLoading } = useDepositRole();
   const {
     loading: passkeyLoading,
     isPasskeySupported,
@@ -97,7 +101,7 @@ export function Account() {
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">Account</h1>
+            <h1 className="text-3xl font-bold text-gray-800">My Account</h1>
             <div className="flex items-center gap-2 mt-1">
               <p className="text-gray-600 font-mono text-sm">
                 {address?.slice(0, 6)}...{address?.slice(-4)}
@@ -111,14 +115,20 @@ export function Account() {
                 </p>
                 <button
                   onClick={() => setReceiveModal({ isOpen: true })}
-                  className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                  className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex flex-col justify-center items-center"
                 >
+                  <QrCodeIcon />
                   Receive
                 </button>
               </div>
             )}
           </div>
         </div>
+
+        {/* Unauthorized Banner */}
+        {isConnected && !roleLoading && !hasDepositRole && (
+          <UnauthorizedBanner />
+        )}
 
         {/* Passkey Section */}
         {isPasskeySupported() && (
@@ -269,7 +279,17 @@ export function Account() {
                                   tokenBalance: balance,
                                 })
                               }
-                              className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 font-medium text-sm"
+                              disabled={!hasDepositRole}
+                              className={`px-3 py-1 rounded font-medium text-sm ${
+                                hasDepositRole
+                                  ? "bg-green-600 text-white hover:bg-green-700"
+                                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                              }`}
+                              title={
+                                !hasDepositRole
+                                  ? "You need to be whitelisted to encrypt tokens"
+                                  : ""
+                              }
                             >
                               Encrypt
                             </button>
