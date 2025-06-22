@@ -171,7 +171,7 @@ export function Account() {
           <div className="bg-white rounded-lg shadow-sm">
             <div className="px-6 py-4 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-800">
-                Token Balances
+                EVM Token Balances
               </h2>
               <p className="text-gray-600 text-sm mt-1">
                 View and manage your token balances across different chains

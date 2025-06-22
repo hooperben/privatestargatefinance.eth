@@ -5,6 +5,7 @@ import { Navigation } from "./components/Navigation";
 import { Account } from "./pages/Account";
 import { Contacts } from "./pages/Contacts";
 import { Readings } from "./pages/Readings";
+import { TreeTest } from "./pages/TreeTest";
 
 function App() {
   const location = useLocation();
@@ -18,6 +19,7 @@ function App() {
         <Route path="/account" element={<Account />} />
         <Route path="/readings" element={<Readings />} />
         <Route path="/contacts" element={<Contacts />} />
+        <Route path="/tree-test" element={<TreeTest />} />
       </Routes>
     </div>
   );
