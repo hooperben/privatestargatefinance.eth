@@ -4,7 +4,7 @@ import { Noir } from "@noir-lang/noir_js";
 import type { CompiledCircuit } from "@noir-lang/noir_js";
 
 import depositCircuit from "../../../circuits/deposit/target/deposit.json";
-import { loadPoseidon } from "../utils/poseidon";
+import { poseidon2Hash } from "@zkpassport/poseidon2";
 
 interface DepositNote {
   assetId: string;
@@ -25,11 +25,8 @@ export function DepositProofGenerateButton() {
       const noir = new Noir(depositCircuit as CompiledCircuit);
       const backend = new UltraHonkBackend(depositCircuit.bytecode);
 
-      // Load the real poseidon hash function
-      const poseidonHash = await loadPoseidon();
-
       // Generate note hash using real poseidon
-      const noteHash = await poseidonHash([
+      const noteHash = poseidon2Hash([
         BigInt(assetId),
         assetAmount,
         owner,
@@ -77,8 +74,7 @@ export function DepositProofGenerateButton() {
         10036677144260647934022413515521823129584317400947571241312859176539726523915n;
 
       // Load the real poseidon hash function and generate owner from owner secret
-      const poseidonHash = await loadPoseidon();
-      const ownerHash = await poseidonHash([ownerSecret]);
+      const ownerHash = poseidon2Hash([ownerSecret]);
       const owner = BigInt(ownerHash.toString());
 
       // Create the deposit note

@@ -13,6 +13,7 @@ import {
 } from "../components/ui/table";
 import { Skeleton } from "../components/ui/skeleton";
 import { Button } from "../components/ui/button";
+import { WithdrawModal } from "../components/WithdrawModal";
 import { CHAIN_NAMES, OAPP_ADDRESS } from "../constants";
 
 export function Notes() {
@@ -31,6 +32,13 @@ export function Notes() {
   const [showOnlyOwned, setShowOnlyOwned] = useState(true);
   const [userNotes, setUserNotes] = useState<typeof notes>([]);
   const [userHashPub, setUserHashPub] = useState<string | null>(null);
+  const [withdrawModal, setWithdrawModal] = useState<{
+    isOpen: boolean;
+    note: (typeof notes)[0] | null;
+  }>({
+    isOpen: false,
+    note: null,
+  });
 
   // Get user's hash pub and user notes when component mounts or notes change
   useEffect(() => {
@@ -206,6 +214,7 @@ export function Notes() {
                   <TableHead>Secret</TableHead>
                   <TableHead>Created</TableHead>
                   <TableHead>Tx Hash</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -234,6 +243,9 @@ export function Notes() {
                     </TableCell>
                     <TableCell>
                       <Skeleton className="h-5 w-20" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-8 w-16" />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -311,6 +323,7 @@ export function Notes() {
                     <TableHead>Secret</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead>Tx Hash</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -371,6 +384,27 @@ export function Notes() {
                             {formatAddress(note.transactionHash)}
                           </a>
                         </TableCell>
+                        <TableCell>
+                          {noteIsOwned ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() =>
+                                setWithdrawModal({
+                                  isOpen: true,
+                                  note: note,
+                                })
+                              }
+                              className="text-red-600 border-red-300 hover:bg-red-50 hover:border-red-400"
+                            >
+                              Withdraw
+                            </Button>
+                          ) : (
+                            <span className="text-gray-400 text-xs">
+                              Not owned
+                            </span>
+                          )}
+                        </TableCell>
                       </TableRow>
                     );
                   })}
@@ -416,6 +450,32 @@ export function Notes() {
             </div>
           )}
         </div>
+
+        {/* Withdraw Modal */}
+        <WithdrawModal
+          isOpen={withdrawModal.isOpen}
+          onClose={() => setWithdrawModal({ isOpen: false, note: null })}
+          note={
+            withdrawModal.note
+              ? {
+                  leafIndex: withdrawModal.note.leafIndex?.toString() || "",
+                  assetId: withdrawModal.note.assetId || "",
+                  assetAmount: withdrawModal.note.assetAmount || "",
+                  owner: withdrawModal.note.owner || "",
+                  secret: withdrawModal.note.secret || "",
+                  chainId: withdrawModal.note.chainId,
+                }
+              : null
+          }
+          tokenSymbol={
+            withdrawModal.note
+              ? getTokenSymbol(
+                  withdrawModal.note.assetId || "",
+                  withdrawModal.note.chainId,
+                )
+              : ""
+          }
+        />
       </div>
     </div>
   );
