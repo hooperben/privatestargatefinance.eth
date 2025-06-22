@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useNotes } from "../../hooks/useNotes";
+import { useContractNotes } from "../../hooks/useContractNotes";
 import {
   Table,
   TableBody,
@@ -11,27 +11,45 @@ import {
   TableRow,
 } from "../components/ui/table";
 import { Skeleton } from "../components/ui/skeleton";
-import { TOKENS } from "../../lib/tokens";
-import { CHAIN_NAMES } from "../constants";
+import { Button } from "../components/ui/button";
+import { CHAIN_NAMES, OAPP_ADDRESS } from "../constants";
 
 export function Notes() {
-  const { notes, loading, error } = useNotes();
+  const {
+    notes,
+    loading,
+    syncing,
+    syncProgress,
+    error,
+    refetch,
+    getUserNotes,
+    getTokenSymbol,
+  } = useContractNotes();
   const [selectedChain, setSelectedChain] = useState<number | null>(null);
+  const [showOnlyOwned, setShowOnlyOwned] = useState(true);
 
-  const filteredNotes = selectedChain
-    ? notes.filter((note) => note.chainId === selectedChain)
-    : notes;
+  // Filter notes based on selected chain and ownership
+  let filteredNotes = notes;
+  if (showOnlyOwned) {
+    filteredNotes = getUserNotes();
+  }
+  if (selectedChain) {
+    filteredNotes = filteredNotes.filter(
+      (note) => note.chainId === selectedChain,
+    );
+  }
 
-  const formatAmount = (amount: string, symbol: string) => {
-    const decimals = TOKENS[symbol as keyof typeof TOKENS]?.decimals || 6;
+  const formatAmount = (amount?: string, symbol?: string) => {
+    if (!amount || !symbol) return "Unknown";
     const numericAmount = parseFloat(amount);
     return numericAmount.toLocaleString(undefined, {
       minimumFractionDigits: 2,
-      maximumFractionDigits: Math.min(decimals, 6),
+      maximumFractionDigits: 6,
     });
   };
 
-  const formatAddress = (address: string) => {
+  const formatAddress = (address?: string) => {
+    if (!address) return "Unknown";
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
@@ -43,19 +61,6 @@ export function Notes() {
       hour: "2-digit",
       minute: "2-digit",
     });
-  };
-
-  const getTokenSymbol = (assetId: string, chainId: number): string => {
-    for (const [symbol, token] of Object.entries(TOKENS)) {
-      if (
-        token.addresses[
-          chainId as keyof typeof token.addresses
-        ]?.toLowerCase() === assetId.toLowerCase()
-      ) {
-        return symbol;
-      }
-    }
-    return "UNKNOWN";
   };
 
   if (error) {
@@ -82,42 +87,78 @@ export function Notes() {
               Encrypted Notes
             </h1>
             <p className="text-gray-600 mt-1">
-              Your private encrypted deposit notes
+              Notes from LeafInserted events on-chain
             </p>
           </div>
 
-          {/* Chain filter */}
-          <div className="flex gap-2">
-            <button
-              onClick={() => setSelectedChain(null)}
-              className={`px-3 py-1 rounded text-sm font-medium ${
-                selectedChain === null
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
+          <div className="flex gap-4 items-center">
+            {/* Ownership filter */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowOnlyOwned(false)}
+                className={`px-3 py-1 rounded text-sm font-medium ${
+                  !showOnlyOwned
+                    ? "bg-green-600 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                All Notes
+              </button>
+              <button
+                onClick={() => setShowOnlyOwned(true)}
+                className={`px-3 py-1 rounded text-sm font-medium ${
+                  showOnlyOwned
+                    ? "bg-green-600 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                My Notes Only
+              </button>
+            </div>
+
+            {/* Chain filter */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setSelectedChain(null)}
+                className={`px-3 py-1 rounded text-sm font-medium ${
+                  selectedChain === null
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                All Chains
+              </button>
+              <button
+                onClick={() => setSelectedChain(42161)}
+                className={`px-3 py-1 rounded text-sm font-medium ${
+                  selectedChain === 42161
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                Arbitrum
+              </button>
+              <button
+                onClick={() => setSelectedChain(8453)}
+                className={`px-3 py-1 rounded text-sm font-medium ${
+                  selectedChain === 8453
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                Base
+              </button>
+            </div>
+
+            {/* Refresh button */}
+            <Button
+              onClick={refetch}
+              variant="outline"
+              size="sm"
+              disabled={loading || syncing}
             >
-              All Chains
-            </button>
-            <button
-              onClick={() => setSelectedChain(42161)}
-              className={`px-3 py-1 rounded text-sm font-medium ${
-                selectedChain === 42161
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
-            >
-              Arbitrum
-            </button>
-            <button
-              onClick={() => setSelectedChain(8453)}
-              className={`px-3 py-1 rounded text-sm font-medium ${
-                selectedChain === 8453
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
-            >
-              Base
-            </button>
+              {loading ? "Loading..." : syncing ? "Syncing..." : "Refresh"}
+            </Button>
           </div>
         </div>
 
@@ -129,18 +170,22 @@ export function Notes() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Leaf Index</TableHead>
                   <TableHead>Asset</TableHead>
                   <TableHead>Chain</TableHead>
                   <TableHead>Amount</TableHead>
                   <TableHead>Owner</TableHead>
                   <TableHead>Secret</TableHead>
                   <TableHead>Created</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>Tx Hash</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {[1, 2, 3].map((i) => (
                   <TableRow key={i}>
+                    <TableCell>
+                      <Skeleton className="h-5 w-16" />
+                    </TableCell>
                     <TableCell>
                       <Skeleton className="h-5 w-12" />
                     </TableCell>
@@ -160,7 +205,7 @@ export function Notes() {
                       <Skeleton className="h-5 w-32" />
                     </TableCell>
                     <TableCell>
-                      <Skeleton className="h-5 w-16" />
+                      <Skeleton className="h-5 w-20" />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -171,11 +216,46 @@ export function Notes() {
           <div className="bg-white rounded-lg shadow-sm">
             <div className="px-6 py-4 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-800">
-                Your Encrypted Notes ({filteredNotes.length})
+                {showOnlyOwned ? "Your" : "All"} Encrypted Notes (
+                {filteredNotes.length})
               </h2>
               <p className="text-gray-600 text-sm mt-1">
-                Private notes stored locally in your browser
+                Notes from LeafInserted events on the blockchain
               </p>
+
+              {/* Sync Progress */}
+              {syncing && (
+                <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="animate-spin h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                    <span className="text-blue-800 font-medium text-sm">
+                      Syncing blockchain events...
+                    </span>
+                  </div>
+                  <div className="space-y-1 text-xs">
+                    {Object.entries(syncProgress).map(
+                      ([chainId, blockNumber]) => (
+                        <div
+                          key={chainId}
+                          className="flex justify-between text-blue-700"
+                        >
+                          <span>
+                            {
+                              CHAIN_NAMES[
+                                Number(chainId) as keyof typeof CHAIN_NAMES
+                              ]
+                            }
+                            :
+                          </span>
+                          <span className="font-mono">
+                            Block {blockNumber.toLocaleString()}
+                          </span>
+                        </div>
+                      ),
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {filteredNotes.length === 0 ? (
@@ -186,32 +266,46 @@ export function Notes() {
                     ? `No notes found for ${
                         CHAIN_NAMES[selectedChain as keyof typeof CHAIN_NAMES]
                       }`
-                    : "Create your first encrypted deposit to see notes here"}
+                    : showOnlyOwned
+                    ? "No notes found that belong to you. Try creating an encrypted deposit or toggle to 'All Notes'."
+                    : "No LeafInserted events found on the blockchain yet."}
                 </p>
               </div>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>Leaf Index</TableHead>
                     <TableHead>Asset</TableHead>
                     <TableHead>Chain</TableHead>
                     <TableHead>Amount</TableHead>
                     <TableHead>Owner</TableHead>
                     <TableHead>Secret</TableHead>
                     <TableHead>Created</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>Tx Hash</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredNotes.map((note) => {
                     const tokenSymbol = getTokenSymbol(
-                      note.assetId,
+                      note.assetId || "",
                       note.chainId,
                     );
                     return (
-                      <TableRow key={note.id}>
+                      <TableRow
+                        key={`${note.chainId}-${note.leafIndex}`}
+                        className={note.isOwned ? "bg-green-50" : ""}
+                      >
+                        <TableCell className="font-mono text-sm">
+                          {note.leafIndex}
+                        </TableCell>
                         <TableCell className="font-semibold">
                           {tokenSymbol}
+                          {note.isOwned && (
+                            <span className="ml-2 text-xs text-green-600">
+                              👤
+                            </span>
+                          )}
                         </TableCell>
                         <TableCell>
                           <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
@@ -232,18 +326,21 @@ export function Notes() {
                           {formatAddress(note.secret)}
                         </TableCell>
                         <TableCell className="text-sm text-gray-600">
-                          {formatDate(note.createdAt)}
+                          {formatDate(note.timestamp)}
                         </TableCell>
                         <TableCell>
-                          {note.txHash ? (
-                            <span className="text-green-600 text-sm font-medium">
-                              ✅ Deposited
-                            </span>
-                          ) : (
-                            <span className="text-yellow-600 text-sm font-medium">
-                              ⏳ Pending
-                            </span>
-                          )}
+                          <a
+                            href={`https://${
+                              note.chainId === 42161
+                                ? "arbiscan.io"
+                                : "basescan.org"
+                            }/tx/${note.transactionHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 text-sm font-mono"
+                          >
+                            {formatAddress(note.transactionHash)}
+                          </a>
                         </TableCell>
                       </TableRow>
                     );
@@ -255,13 +352,40 @@ export function Notes() {
         )}
 
         <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="font-semibold text-blue-900 mb-2">🔒 Privacy Note</h3>
+          <h3 className="font-semibold text-blue-900 mb-2">
+            🔗 On-Chain Notes
+          </h3>
           <p className="text-blue-800 text-sm">
-            Your encrypted notes are stored locally in your browser's IndexedDB.
-            They contain the secret information needed to spend your private
-            deposits. Keep your passkey safe as it's required to access these
-            notes.
+            These notes are fetched directly from LeafInserted events on the
+            blockchain contracts. Notes marked with 👤 belong to you (based on
+            your passkey). The leaf index shows the position in the Merkle tree,
+            and the transaction hash links to the block explorer.
           </p>
+          <p className="text-blue-800 text-sm mt-2">
+            <strong>Contract Address:</strong>{" "}
+            <span className="font-mono text-xs">{OAPP_ADDRESS}</span>
+          </p>
+
+          {/* Sync Status */}
+          {!syncing && Object.keys(syncProgress).length > 0 && (
+            <div className="mt-3 pt-3 border-t border-blue-200">
+              <h4 className="font-medium text-blue-900 text-sm mb-2">
+                Sync Status:
+              </h4>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                {Object.entries(syncProgress).map(([chainId, blockNumber]) => (
+                  <div key={chainId} className="bg-blue-100 rounded px-2 py-1">
+                    <div className="font-medium text-blue-900">
+                      {CHAIN_NAMES[Number(chainId) as keyof typeof CHAIN_NAMES]}
+                    </div>
+                    <div className="text-blue-700 font-mono">
+                      Block {blockNumber.toLocaleString()}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

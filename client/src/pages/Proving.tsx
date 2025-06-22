@@ -2,19 +2,14 @@ import { DepositProofGenerateButton } from "../components/DepositProofButton";
 import { TransferProofButton } from "../components/TransferProofButton";
 import { WarpButton } from "../components/WarpButton";
 import { WithdrawButton } from "../components/WithdrawButton";
-import { WalletConnect } from "../components/WalletConnect";
 
-export function Home() {
+export function Proving() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-8 bg-gray-50">
       <div className="max-w-4xl w-full">
         <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
-          Private Stargate Finance
+          Proving Noir Circuits
         </h1>
-
-        <div className="mb-6">
-          <WalletConnect />
-        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white rounded-lg shadow-md p-6">

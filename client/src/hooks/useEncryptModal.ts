@@ -365,8 +365,7 @@ export function useEncryptModal(tokenBalance: TokenBalance, isOpen: boolean) {
 
       // Generate owner address using poseidon hash
       const poseidonHash = await loadPoseidon();
-      const ownerHash = await poseidonHash([ownerSecret]);
-      const owner = BigInt(ownerHash.toString());
+      const owner = poseidon2Hash([ownerSecret]);
 
       // 2. Prepare deposit data
       const tokenAddress = getTokenAddress(tokenBalance);

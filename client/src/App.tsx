@@ -7,6 +7,7 @@ import { Contacts } from "./pages/Contacts";
 import { Notes } from "./pages/Notes";
 import { Readings } from "./pages/Readings";
 import { TreeTest } from "./pages/TreeTest";
+import { Proving } from "./pages/Proving";
 
 function App() {
   const location = useLocation();
@@ -22,6 +23,7 @@ function App() {
         <Route path="/contacts" element={<Contacts />} />
         <Route path="/notes" element={<Notes />} />
         <Route path="/tree-test" element={<TreeTest />} />
+        <Route path="/proving" element={<Proving />} />
       </Routes>
     </div>
   );
