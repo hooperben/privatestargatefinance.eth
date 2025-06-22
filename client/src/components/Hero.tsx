@@ -8,7 +8,7 @@ export default function Hero() {
     <div className="relative min-h-screen w-full bg-white dark:bg-black overflow-hidden">
       {/* Animated SVG Background */}
       <svg
-        className="absolute inset-0 w-full h-full"
+        className="absolute inset-0 w-full h-full scale-200 md:scale-100"
         viewBox="0 0 1400 800"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -211,12 +211,12 @@ export default function Hero() {
           </h1>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col justify-center items-center md:flex-row gap-4">
           <Link to="/readings">
             <Button
               variant="outline"
               size="lg"
-              className="bg-white dark:bg-black text-black dark:text-white border-black dark:border-white hover:bg-gray-100 dark:hover:bg-gray-900 font-mono px-8 py-3 rounded-full"
+              className="bg-white dark:bg-black text-black dark:text-white border-black dark:border-white hover:bg-gray-100 dark:hover:bg-gray-900 font-mono px-8 py-3 rounded-full min-w-[200px]"
             >
               learn more
             </Button>
@@ -225,7 +225,7 @@ export default function Hero() {
             <Button
               variant="outline"
               size="lg"
-              className="bg-white dark:bg-black text-black dark:text-white border-black dark:border-white hover:bg-gray-100 dark:hover:bg-gray-900 font-mono px-8 py-3 rounded-full"
+              className="bg-white dark:bg-black text-black dark:text-white border-black dark:border-white hover:bg-gray-100 dark:hover:bg-gray-900 font-mono px-8 py-3 rounded-full min-w-[200px]"
             >
               account
             </Button>

@@ -11,7 +11,7 @@ import { OAPP_ADDRESS } from "../constants";
 import { useMerkleTree } from "./useMerkleTree";
 
 import withdrawCircuit from "../../../circuits/withdraw/target/withdraw.json";
-import { loadPoseidon } from "../utils/poseidon";
+import { poseidon2Hash } from "@zkpassport/poseidon2";
 
 interface NoteData {
   leafIndex: string;
@@ -57,9 +57,6 @@ export function useWithdraw(chainId: number) {
       const noir = new Noir(withdrawCircuit as CompiledCircuit);
       const backend = new UltraHonkBackend(withdrawCircuit.bytecode);
 
-      // Load the real poseidon hash function
-      const poseidonHash = await loadPoseidon();
-
       // Get real merkle proof for this note
       const merkleProof = getMerkleProof(parseInt(noteData.leafIndex));
       if (!merkleProof) {
@@ -81,7 +78,7 @@ export function useWithdraw(chainId: number) {
       };
 
       // Calculate nullifier for input note
-      const nullifier = poseidonHash([
+      const nullifier = poseidon2Hash([
         BigInt(inputNote.leaf_index),
         BigInt(inputNote.owner),
         BigInt(inputNote.secret),
@@ -90,7 +87,7 @@ export function useWithdraw(chainId: number) {
       ]);
 
       // Calculate withdraw address hash
-      const withdrawAddressHash = poseidonHash([BigInt(withdrawToAddress)]);
+      const withdrawAddressHash = poseidon2Hash([BigInt(withdrawToAddress)]);
 
       // Mock empty notes for unused slots
       const emptyInputNote = {
