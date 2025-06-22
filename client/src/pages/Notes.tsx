@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useContractNotes } from "../../hooks/useContractNotes";
+import { usePasskey } from "../../hooks/usePasskey";
 import {
   Table,
   TableBody,
@@ -25,19 +26,46 @@ export function Notes() {
     getUserNotes,
     getTokenSymbol,
   } = useContractNotes();
+  const { getUserHashPub } = usePasskey();
   const [selectedChain, setSelectedChain] = useState<number | null>(null);
   const [showOnlyOwned, setShowOnlyOwned] = useState(true);
+  const [userNotes, setUserNotes] = useState<typeof notes>([]);
+  const [userHashPub, setUserHashPub] = useState<string | null>(null);
+
+  // Get user's hash pub and user notes when component mounts or notes change
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const hashPub = await getUserHashPub();
+        setUserHashPub(hashPub);
+
+        if (showOnlyOwned) {
+          const userNotesData = await getUserNotes();
+          setUserNotes(userNotesData);
+        }
+      } catch (error) {
+        console.error("Error loading user data:", error);
+      }
+    };
+
+    loadUserData();
+  }, [notes, showOnlyOwned, getUserHashPub, getUserNotes]);
 
   // Filter notes based on selected chain and ownership
-  let filteredNotes = notes;
-  if (showOnlyOwned) {
-    filteredNotes = getUserNotes();
-  }
+  let filteredNotes = showOnlyOwned ? userNotes : notes;
+
   if (selectedChain) {
     filteredNotes = filteredNotes.filter(
       (note) => note.chainId === selectedChain,
     );
   }
+
+  // Check if a note is owned by the current user
+  const isNoteOwned = (note: (typeof notes)[0]) => {
+    return (
+      userHashPub && note.owner?.toString() === BigInt(userHashPub).toString()
+    );
+  };
 
   const formatAmount = (amount?: string, symbol?: string) => {
     if (!amount || !symbol) return "Unknown";
@@ -291,17 +319,18 @@ export function Notes() {
                       note.assetId || "",
                       note.chainId,
                     );
+                    const noteIsOwned = isNoteOwned(note);
                     return (
                       <TableRow
                         key={`${note.chainId}-${note.leafIndex}`}
-                        className={note.isOwned ? "bg-green-50" : ""}
+                        className={noteIsOwned ? "bg-green-50" : ""}
                       >
                         <TableCell className="font-mono text-sm">
                           {note.leafIndex}
                         </TableCell>
                         <TableCell className="font-semibold">
                           {tokenSymbol}
-                          {note.isOwned && (
+                          {noteIsOwned && (
                             <span className="ml-2 text-xs text-green-600">
                               👤
                             </span>

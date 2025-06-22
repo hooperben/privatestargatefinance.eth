@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { ethers } from "ethers";
+import { poseidon2Hash } from "@zkpassport/poseidon2";
 
 export interface PasskeyAccount {
   address: string;
@@ -150,11 +151,40 @@ export function usePasskey() {
     return !!localStorage.getItem("passkey-credential-id");
   }, []);
 
+  // Get the user's hash public key (poseidon2Hash of privateKey)
+  const getUserHashPub = useCallback(async (): Promise<string | null> => {
+    try {
+      // Check if we have it cached in session storage
+      const cached = sessionStorage.getItem("user-hash-pub");
+      if (cached) {
+        return cached;
+      }
+
+      // Get the mnemonic from passkey
+      const mnemonic = await getMnemonicFromPasskey();
+      if (!mnemonic) return null;
+
+      const wallet = ethers.Wallet.fromPhrase(mnemonic);
+      const ownerSecret = BigInt(wallet.privateKey);
+      const hashPub = poseidon2Hash([ownerSecret]);
+      const hashPubHex = `0x${hashPub.toString(16)}`;
+
+      // Cache it in session storage
+      sessionStorage.setItem("user-hash-pub", hashPubHex);
+
+      return hashPubHex;
+    } catch (error) {
+      console.error("Error getting user hash pub:", error);
+      return null;
+    }
+  }, [getMnemonicFromPasskey]);
+
   return {
     loading,
     isPasskeySupported,
     createPasskeyAccount,
     getMnemonicFromPasskey,
     hasPasskey,
+    getUserHashPub,
   };
 }

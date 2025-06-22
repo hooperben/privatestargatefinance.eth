@@ -75,14 +75,25 @@ interface SyncProgress {
   updatedAt: number;
 }
 
+interface DecodedNotePayload {
+  assetId?: string;
+  assetAmount?: string;
+  owner?: string;
+  secret?: string;
+}
+
 export function useContractNotes() {
   const [notes, setNotes] = useState<ContractNote[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [syncProgress, setSyncProgress] = useState<Record<number, number>>({});
   const [error, setError] = useState<string | null>(null);
-  const { getMnemonicFromPasskey, hasPasskey } = usePasskey();
+  const { getUserHashPub } = usePasskey();
   const dbRef = useRef<IDBDatabase | null>(null);
+
+  useEffect(() => {
+    console.log();
+  });
 
   // Initialize IndexedDB
   const initDB = useCallback((): Promise<IDBDatabase> => {
@@ -255,14 +266,7 @@ export function useContractNotes() {
 
   // Decode encrypted note payload
   const decodeNotePayload = useCallback(
-    async (
-      encryptedData: string,
-    ): Promise<{
-      assetId?: string;
-      assetAmount?: string;
-      owner?: string;
-      secret?: string;
-    } | null> => {
+    async (encryptedData: string): Promise<DecodedNotePayload | null> => {
       try {
         const decoded = ethers.AbiCoder.defaultAbiCoder().decode(
           ["string", "string", "string", "string"],
@@ -281,33 +285,6 @@ export function useContractNotes() {
       }
     },
     [],
-  );
-
-  // Check if a note belongs to the current user
-  const checkNoteOwnership = useCallback(
-    async (owner: string): Promise<boolean> => {
-      if (!hasPasskey()) return false;
-
-      try {
-        const mnemonic = await getMnemonicFromPasskey();
-        if (!mnemonic) return false;
-
-        const wallet = ethers.Wallet.fromPhrase(mnemonic);
-        const ownerSecret = BigInt(wallet.privateKey);
-        const expectedOwner = poseidon2Hash([ownerSecret]);
-
-        console.log(expectedOwner);
-
-        return (
-          owner.toLowerCase() ===
-          `0x${expectedOwner.toString(16)}`.toLowerCase()
-        );
-      } catch (error) {
-        console.error("Error checking note ownership:", error);
-        return false;
-      }
-    },
-    [hasPasskey, getMnemonicFromPasskey],
   );
 
   // Fetch events for a specific block range on a chain
@@ -342,7 +319,7 @@ export function useContractNotes() {
         ]);
 
         // Group payload events by transaction hash
-        const payloadsByTx = new Map<string, any[]>();
+        const payloadsByTx = new Map<string, typeof payloadEvents>();
         for (const event of payloadEvents) {
           if ("args" in event && event.args) {
             if (!payloadsByTx.has(event.transactionHash)) {
@@ -365,7 +342,7 @@ export function useContractNotes() {
             try {
               const block = await provider.getBlock(leafEvent.blockNumber);
               timestamp = block ? block.timestamp * 1000 : Date.now();
-            } catch (error) {
+            } catch {
               console.warn(
                 `Failed to get block timestamp for block ${leafEvent.blockNumber}`,
               );
@@ -376,7 +353,7 @@ export function useContractNotes() {
             const txPayloads =
               payloadsByTx.get(leafEvent.transactionHash) || [];
 
-            let decodedNote: any = null;
+            let decodedNote: DecodedNotePayload | null = null;
             let payloadData: string | undefined;
 
             // Try to decode the first payload event in the transaction
@@ -391,12 +368,6 @@ export function useContractNotes() {
               }
             }
 
-            // Check ownership if we have decoded data
-            let isOwned = false;
-            if (decodedNote?.owner) {
-              isOwned = await checkNoteOwnership(decodedNote.owner);
-            }
-
             processedNotes.push({
               leafIndex,
               leafValue,
@@ -408,7 +379,7 @@ export function useContractNotes() {
               assetAmount: decodedNote?.assetAmount,
               owner: decodedNote?.owner,
               secret: decodedNote?.secret,
-              isOwned,
+              isOwned: false, // This field is now deprecated, ownership is determined by comparing note.owner with getUserHashPub()
               payloadData,
             });
           }
@@ -423,7 +394,7 @@ export function useContractNotes() {
         throw error;
       }
     },
-    [decodeNotePayload, checkNoteOwnership],
+    [decodeNotePayload],
   );
 
   // Sync events for a specific chain
@@ -531,6 +502,7 @@ export function useContractNotes() {
   const refreshNotes = useCallback(async () => {
     try {
       const savedNotes = await loadNotesFromDB();
+      console.log(savedNotes);
       setNotes(savedNotes);
     } catch (error) {
       console.error("Failed to refresh notes:", error);
@@ -571,9 +543,21 @@ export function useContractNotes() {
   );
 
   // Get notes that belong to the current user
-  const getUserNotes = useCallback((): ContractNote[] => {
-    return notes.filter((note) => note.isOwned);
-  }, [notes]);
+  const getUserNotes = useCallback(async (): Promise<ContractNote[]> => {
+    try {
+      const userHashPub = await getUserHashPub();
+      if (!userHashPub) return [];
+
+      return notes.filter(
+        (note) =>
+          BigInt(note.owner!.toLowerCase().toString()!) ===
+          BigInt(userHashPub!),
+      );
+    } catch (error) {
+      console.error("Error getting user notes:", error);
+      return [];
+    }
+  }, [notes, getUserHashPub]);
 
   // Get token symbol from asset ID
   const getTokenSymbol = useCallback(
@@ -605,7 +589,7 @@ export function useContractNotes() {
     error,
     refetch: performSync,
     getNotesByChain,
-    getUserNotes,
+    getUserNotes, // Returns notes that belong to the current user (note.owner === getUserHashPub())
     getTokenSymbol,
   };
 }
