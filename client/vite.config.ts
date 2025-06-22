@@ -33,7 +33,14 @@ function ipfsRouting(): Plugin {
           if (!fs.existsSync(routeDir)) {
             fs.mkdirSync(routeDir, { recursive: true });
           }
-          fs.writeFileSync(path.join(routeDir, "index.html"), indexContent);
+
+          // Fix relative paths to be absolute from root
+          const fixedContent = indexContent
+            .replace(/src="\.\/assets\//g, 'src="../assets/')
+            .replace(/href="\.\/assets\//g, 'href="../assets/')
+            .replace(/href="\.\/vite\.svg"/g, 'href="../vite.svg"');
+
+          fs.writeFileSync(path.join(routeDir, "index.html"), fixedContent);
         });
       }
     },
