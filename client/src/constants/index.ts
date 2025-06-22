@@ -16,3 +16,9 @@ export const MERKLE_TREE_CAPACITY = 2 ** MERKLE_TREE_LEVELS; // 4096 leaves
 export const SUPPORTED_CHAINS = [ARBITRUM_CHAIN_ID, BASE_CHAIN_ID] as const;
 
 export type SupportedChainId = (typeof SUPPORTED_CHAINS)[number];
+
+// Chain names mapping
+export const CHAIN_NAMES: Record<number, string> = {
+  [ARBITRUM_CHAIN_ID]: "Arbitrum",
+  [BASE_CHAIN_ID]: "Base",
+};

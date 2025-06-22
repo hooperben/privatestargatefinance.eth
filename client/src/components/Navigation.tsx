@@ -43,6 +43,16 @@ export function Navigation() {
             >
               Contacts
             </Link>
+            {/* <Link
+              to="/notes"
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive("/notes")
+                  ? "bg-blue-100 text-blue-700"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              }`}
+            >
+              Notes
+            </Link>
             <Link
               to="/tree-test"
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
@@ -52,7 +62,7 @@ export function Navigation() {
               }`}
             >
               Tree Test
-            </Link>
+            </Link> */}
           </div>
 
           {isConnected && (

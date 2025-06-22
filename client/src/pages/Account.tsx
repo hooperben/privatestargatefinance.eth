@@ -6,9 +6,8 @@ import { useAccount } from "wagmi";
 import { usePasskey } from "../../hooks/usePasskey";
 import type { TokenBalance } from "../../hooks/useTokenBalances";
 import { useTokenBalances } from "../../hooks/useTokenBalances";
-import { TransferModal } from "../components/TransferModal";
+import { EncryptModal } from "../components/EncryptModal";
 import { WalletConnect } from "../components/WalletConnect";
-import { WarpModal } from "../components/WarpModal";
 import { Skeleton } from "../components/ui/skeleton";
 import {
   Table,
@@ -26,16 +25,9 @@ export function Account() {
     loading: passkeyLoading,
     isPasskeySupported,
     createPasskeyAccount,
-    getMnemonicFromPasskey,
     hasPasskey,
   } = usePasskey();
-  const [transferModal, setTransferModal] = useState<{
-    isOpen: boolean;
-    tokenBalance?: TokenBalance;
-  }>({
-    isOpen: false,
-  });
-  const [warpModal, setWarpModal] = useState<{
+  const [encryptModal, setEncryptModal] = useState<{
     isOpen: boolean;
     tokenBalance?: TokenBalance;
   }>({
@@ -74,20 +66,6 @@ export function Account() {
       }
     } catch (error) {
       console.error("Failed to create private account:", error);
-    }
-  };
-
-  const handleGetMnemonic = async () => {
-    try {
-      const mnemonic = await getMnemonicFromPasskey();
-      if (mnemonic) {
-        console.log("Retrieved mnemonic:", mnemonic);
-        console.log(
-          "Mnemonic retrieved successfully! Check the console for details.",
-        );
-      }
-    } catch (error) {
-      console.error("Failed to retrieve mnemonic:", error);
     }
   };
 
@@ -152,7 +130,7 @@ export function Account() {
                   <div className="text-green-700 font-medium">
                     ✅ Private account created
                   </div>
-                  <button
+                  {/* <button
                     onClick={handleGetMnemonic}
                     disabled={passkeyLoading}
                     className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
@@ -160,7 +138,7 @@ export function Account() {
                     {passkeyLoading
                       ? "Retrieving..."
                       : "Get Mnemonic (Console)"}
-                  </button>
+                  </button> */}
                 </div>
               )}
             </div>
@@ -214,7 +192,7 @@ export function Account() {
           <div className="bg-white rounded-lg shadow-sm">
             <div className="px-6 py-4 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-800">
-                Token Balances
+                EVM Token Balances
               </h2>
               <p className="text-gray-600 text-sm mt-1">
                 View and manage your token balances across different chains
@@ -269,25 +247,14 @@ export function Account() {
                           <div className="flex gap-2">
                             <button
                               onClick={() =>
-                                setTransferModal({
+                                setEncryptModal({
                                   isOpen: true,
                                   tokenBalance: balance,
                                 })
                               }
-                              className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium text-sm"
+                              className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 font-medium text-sm"
                             >
-                              Transfer
-                            </button>
-                            <button
-                              onClick={() =>
-                                setWarpModal({
-                                  isOpen: true,
-                                  tokenBalance: balance,
-                                })
-                              }
-                              className="px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 font-medium text-sm"
-                            >
-                              Warp
+                              Encrypt
                             </button>
                           </div>
                         ) : (
@@ -304,19 +271,11 @@ export function Account() {
           </div>
         )}
 
-        {transferModal.tokenBalance && (
-          <TransferModal
-            isOpen={transferModal.isOpen}
-            onClose={() => setTransferModal({ isOpen: false })}
-            tokenBalance={transferModal.tokenBalance}
-          />
-        )}
-
-        {warpModal.tokenBalance && (
-          <WarpModal
-            isOpen={warpModal.isOpen}
-            onClose={() => setWarpModal({ isOpen: false })}
-            tokenBalance={warpModal.tokenBalance}
+        {encryptModal.tokenBalance && (
+          <EncryptModal
+            isOpen={encryptModal.isOpen}
+            onClose={() => setEncryptModal({ isOpen: false })}
+            tokenBalance={encryptModal.tokenBalance}
           />
         )}
       </div>
