@@ -10,6 +10,14 @@ import { TransferModal } from "../components/TransferModal";
 import { WalletConnect } from "../components/WalletConnect";
 import { WarpModal } from "../components/WarpModal";
 import { Skeleton } from "../components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../components/ui/table";
 
 export function Account() {
   const { address, isConnected } = useAccount();
@@ -160,83 +168,139 @@ export function Account() {
         )}
 
         {loading ? (
-          <div className="space-y-4">
-            {/* Skeleton loading for balance cards */}
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white rounded-lg p-6 shadow-sm">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
+          <div className="bg-white rounded-lg shadow-sm">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-800">
+                Token Balances
+              </h2>
+              <p className="text-gray-600 text-sm mt-1">
+                View and manage your token balances across different chains
+              </p>
+            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Token</TableHead>
+                  <TableHead>Chain</TableHead>
+                  <TableHead>Balance</TableHead>
+                  <TableHead className="w-32">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {/* Skeleton loading for balance rows */}
+                {[1, 2, 3].map((i) => (
+                  <TableRow key={i}>
+                    <TableCell>
                       <Skeleton className="h-6 w-16" />
+                    </TableCell>
+                    <TableCell>
                       <Skeleton className="h-5 w-20" />
-                    </div>
-                    <Skeleton className="h-8 w-32" />
-                  </div>
-                  <div className="flex gap-2">
-                    <Skeleton className="h-9 w-20" />
-                    <Skeleton className="h-9 w-16" />
-                  </div>
-                </div>
-              </div>
-            ))}
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-6 w-32" />
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Skeleton className="h-8 w-16" />
+                        <Skeleton className="h-8 w-12" />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         ) : (
-          <div className="space-y-4">
-            {balances.map((balance) => (
-              <div
-                key={`${balance.symbol}-${balance.chainId}`}
-                className="bg-white rounded-lg p-6 shadow-sm"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <div className="flex items-center gap-3 mb-2">
-                      <h2 className="text-xl font-bold">{balance.symbol}</h2>
-                      <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                        {balance.chainName}
-                      </span>
-                    </div>
-                    <div className="text-3xl font-mono font-bold text-gray-800">
-                      {Number.parseFloat(
-                        balance.formattedBalance,
-                      ).toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 6,
-                      })}
-                    </div>
-                  </div>
-
-                  {balance.hasBalance && (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() =>
-                          setTransferModal({
-                            isOpen: true,
-                            tokenBalance: balance,
-                          })
-                        }
-                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium"
-                      >
-                        Transfer
-                      </button>
-                      <button
-                        onClick={() =>
-                          setWarpModal({ isOpen: true, tokenBalance: balance })
-                        }
-                        className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 font-medium"
-                      >
-                        Warp
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {!balance.hasBalance && (
-                  <div className="text-gray-500 text-sm">
-                    No balance available
-                  </div>
-                )}
+          <div className="bg-white rounded-lg shadow-sm">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-800">
+                Token Balances
+              </h2>
+              <p className="text-gray-600 text-sm mt-1">
+                View and manage your token balances across different chains
+              </p>
+            </div>
+            {balances.length === 0 ? (
+              <div className="p-8 text-center text-gray-500">
+                <p>No token balances found</p>
+                <p className="text-sm mt-1">
+                  Connect your wallet to view balances
+                </p>
               </div>
-            ))}
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Token</TableHead>
+                    <TableHead>Chain</TableHead>
+                    <TableHead>Balance</TableHead>
+                    <TableHead className="w-32">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {balances.map((balance) => (
+                    <TableRow key={`${balance.symbol}-${balance.chainId}`}>
+                      <TableCell className="font-semibold text-lg">
+                        {balance.symbol}
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                          {balance.chainName}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        {balance.hasBalance ? (
+                          <div className="font-mono font-bold text-gray-800">
+                            {Number.parseFloat(
+                              balance.formattedBalance,
+                            ).toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 6,
+                            })}
+                          </div>
+                        ) : (
+                          <span className="text-gray-500 text-sm">
+                            No balance
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {balance.hasBalance ? (
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() =>
+                                setTransferModal({
+                                  isOpen: true,
+                                  tokenBalance: balance,
+                                })
+                              }
+                              className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium text-sm"
+                            >
+                              Transfer
+                            </button>
+                            <button
+                              onClick={() =>
+                                setWarpModal({
+                                  isOpen: true,
+                                  tokenBalance: balance,
+                                })
+                              }
+                              className="px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 font-medium text-sm"
+                            >
+                              Warp
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 text-xs">
+                            No actions
+                          </span>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </div>
         )}
 

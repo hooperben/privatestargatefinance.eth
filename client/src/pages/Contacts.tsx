@@ -2,7 +2,7 @@
 
 import { Edit, Plus, Trash2 } from "lucide-react";
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useIndexedDB, type Contact } from "../../hooks/useIndexedDB";
 import { Button } from "../components/ui/button";
 import {
@@ -35,14 +35,14 @@ export function Contacts() {
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [formData, setFormData] = useState({ name: "", address: "" });
 
-  useEffect(() => {
-    loadContacts();
-  }, []);
-
-  const loadContacts = async () => {
+  const loadContacts = useCallback(async () => {
     const contactList = await getContacts();
     setContacts(contactList);
-  };
+  }, [getContacts]);
+
+  useEffect(() => {
+    loadContacts();
+  }, [loadContacts]);
 
   const resetForm = () => {
     setFormData({ name: "", address: "" });
