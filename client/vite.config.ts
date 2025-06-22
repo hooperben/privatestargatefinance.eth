@@ -11,7 +11,14 @@ function ipfsRouting(): Plugin {
     name: "ipfs-routing",
     writeBundle(options) {
       // Routes that need directory structure for trailing slash support
-      const routes = ["account", "readings", "contacts", "notes", "tree-test"];
+      const routes = [
+        "account",
+        "readings",
+        "contacts",
+        "notes",
+        "tree-test",
+        "proving",
+      ];
 
       const outDir = options.dir || "dist";
 

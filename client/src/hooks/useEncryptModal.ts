@@ -13,7 +13,6 @@ import { getRandomWithField } from "../lib/crypto";
 import { useNotes } from "../../hooks/useNotes";
 import { usePasskey } from "../../hooks/usePasskey";
 import { OAPP_ADDRESS } from "../constants";
-import { loadPoseidon } from "../utils/poseidon";
 import depositCircuit from "../../../circuits/deposit/target/deposit.json";
 import { PSF_ADDRESSES, ERC20_ABI, PSF_ABI } from "../constants/encrypt-modal";
 import {
@@ -362,9 +361,6 @@ export function useEncryptModal(tokenBalance: TokenBalance, isOpen: boolean) {
       // Create wallet from mnemonic to get private key as owner_secret
       const wallet = ethers.Wallet.fromPhrase(mnemonic);
       const ownerSecret = BigInt(wallet.privateKey);
-
-      // Generate owner address using poseidon hash
-      const poseidonHash = await loadPoseidon();
       const owner = poseidon2Hash([ownerSecret]);
 
       // 2. Prepare deposit data
@@ -376,7 +372,7 @@ export function useEncryptModal(tokenBalance: TokenBalance, isOpen: boolean) {
       const backend = new UltraHonkBackend(depositCircuit.bytecode);
 
       // Generate note hash using poseidon
-      const noteHash = await poseidonHash([
+      const noteHash = poseidon2Hash([
         BigInt(tokenAddress),
         BigInt(state.amount),
         owner,

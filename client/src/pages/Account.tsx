@@ -7,6 +7,7 @@ import { usePasskey } from "../../hooks/usePasskey";
 import type { TokenBalance } from "../../hooks/useTokenBalances";
 import { useTokenBalances } from "../../hooks/useTokenBalances";
 import { EncryptModal } from "../components/EncryptModal";
+import { ReceiveModal } from "../components/ReceiveModal";
 import { WalletConnect } from "../components/WalletConnect";
 import { Skeleton } from "../components/ui/skeleton";
 import {
@@ -30,6 +31,12 @@ export function Account() {
   const [encryptModal, setEncryptModal] = useState<{
     isOpen: boolean;
     tokenBalance?: TokenBalance;
+  }>({
+    isOpen: false,
+  });
+
+  const [receiveModal, setReceiveModal] = useState<{
+    isOpen: boolean;
   }>({
     isOpen: false,
   });
@@ -91,14 +98,24 @@ export function Account() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-800">Account</h1>
-            <p className="text-gray-600 font-mono text-sm mt-1">
-              {address?.slice(0, 6)}...{address?.slice(-4)}
-            </p>
-            {privateAccountAddress && (
-              <p className="text-green-600 font-mono text-sm mt-1">
-                Private: {privateAccountAddress.slice(0, 6)}...
-                {privateAccountAddress.slice(-4)}
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-gray-600 font-mono text-sm">
+                {address?.slice(0, 6)}...{address?.slice(-4)}
               </p>
+            </div>
+            {privateAccountAddress && (
+              <div className="flex items-center gap-2 mt-1">
+                <p className="text-green-600 font-mono text-sm">
+                  Private: {privateAccountAddress.slice(0, 6)}...
+                  {privateAccountAddress.slice(-4)}
+                </p>
+                <button
+                  onClick={() => setReceiveModal({ isOpen: true })}
+                  className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                >
+                  Receive
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -278,6 +295,11 @@ export function Account() {
             tokenBalance={encryptModal.tokenBalance}
           />
         )}
+
+        <ReceiveModal
+          isOpen={receiveModal.isOpen}
+          onClose={() => setReceiveModal({ isOpen: false })}
+        />
       </div>
     </div>
   );
