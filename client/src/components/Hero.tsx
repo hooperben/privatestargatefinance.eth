@@ -227,7 +227,7 @@ export default function Hero() {
               size="lg"
               className="bg-white dark:bg-black text-black dark:text-white border-black dark:border-white hover:bg-gray-100 dark:hover:bg-gray-900 font-mono px-8 py-3 rounded-full"
             >
-              my account
+              account
             </Button>
           </Link>
         </div>
