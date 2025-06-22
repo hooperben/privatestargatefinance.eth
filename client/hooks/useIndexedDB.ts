@@ -85,5 +85,36 @@ export function useIndexedDB() {
     [db],
   );
 
-  return { addContact, getContacts, deleteContact };
+  const updateContact = useCallback(
+    async (id: string, updates: Partial<Omit<Contact, "id" | "createdAt">>) => {
+      if (!db) return;
+
+      const transaction = db.transaction([CONTACTS_STORE], "readwrite");
+      const store = transaction.objectStore(CONTACTS_STORE);
+
+      // Get the existing contact
+      const getRequest = store.get(id);
+
+      return new Promise<Contact | null>((resolve) => {
+        getRequest.onsuccess = () => {
+          const existingContact = getRequest.result;
+          if (!existingContact) {
+            resolve(null);
+            return;
+          }
+
+          const updatedContact = { ...existingContact, ...updates };
+          const putRequest = store.put(updatedContact);
+
+          putRequest.onsuccess = () => resolve(updatedContact);
+          putRequest.onerror = () => resolve(null);
+        };
+
+        getRequest.onerror = () => resolve(null);
+      });
+    },
+    [db],
+  );
+
+  return { addContact, getContacts, deleteContact, updateContact };
 }

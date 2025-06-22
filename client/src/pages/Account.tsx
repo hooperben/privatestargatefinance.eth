@@ -6,7 +6,6 @@ import { useAccount } from "wagmi";
 import { usePasskey } from "../../hooks/usePasskey";
 import type { TokenBalance } from "../../hooks/useTokenBalances";
 import { useTokenBalances } from "../../hooks/useTokenBalances";
-import { ContactManager } from "../components/ContactManager";
 import { TransferModal } from "../components/TransferModal";
 import { WalletConnect } from "../components/WalletConnect";
 import { WarpModal } from "../components/WarpModal";
@@ -34,7 +33,7 @@ export function Account() {
   }>({
     isOpen: false,
   });
-  const [contactsModal, setContactsModal] = useState(false);
+
   const [privateAccountAddress, setPrivateAccountAddress] = useState<
     string | null
   >(null);
@@ -116,14 +115,6 @@ export function Account() {
               </p>
             )}
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setContactsModal(true)}
-              className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-            >
-              Manage Contacts
-            </button>
-          </div>
         </div>
 
         {/* Passkey Section */}
@@ -132,22 +123,24 @@ export function Account() {
             <h2 className="text-xl font-semibold text-blue-900 mb-4">
               Private Account
             </h2>
-            <p className="text-blue-700 mb-4">
-              Create a private account secured by your device's passkey for
-              enhanced security.
-            </p>
 
             <div className="flex gap-3 flex-wrap">
               {!hasPasskey() ? (
-                <button
-                  onClick={handleCreatePrivateAccount}
-                  disabled={passkeyLoading}
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-                >
-                  {passkeyLoading ? "Creating..." : "Create Private Account"}
-                </button>
+                <div className="flex flex-col">
+                  <p className="text-blue-700 mb-4">
+                    Create a private account secured by your device's passkey
+                    for enhanced security.
+                  </p>
+                  <button
+                    onClick={handleCreatePrivateAccount}
+                    disabled={passkeyLoading}
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  >
+                    {passkeyLoading ? "Creating..." : "Create Private Account"}
+                  </button>
+                </div>
               ) : (
-                <>
+                <div className="flex flex-col gap-2">
                   <div className="text-green-700 font-medium">
                     ✅ Private account created
                   </div>
@@ -160,7 +153,7 @@ export function Account() {
                       ? "Retrieving..."
                       : "Get Mnemonic (Console)"}
                   </button>
-                </>
+                </div>
               )}
             </div>
           </div>
@@ -262,11 +255,6 @@ export function Account() {
             tokenBalance={warpModal.tokenBalance}
           />
         )}
-
-        <ContactManager
-          isOpen={contactsModal}
-          onClose={() => setContactsModal(false)}
-        />
       </div>
     </div>
   );

@@ -1,9 +1,10 @@
+import { Route, Routes, useLocation } from "react-router-dom";
 import "./App.css";
-import { Routes, Route, useLocation } from "react-router-dom";
-import { Account } from "./pages/Account";
-import { Readings } from "./pages/Readings";
 import Hero from "./components/Hero";
 import { Navigation } from "./components/Navigation";
+import { Account } from "./pages/Account";
+import { Contacts } from "./pages/Contacts";
+import { Readings } from "./pages/Readings";
 
 function App() {
   const location = useLocation();
@@ -16,6 +17,7 @@ function App() {
         <Route path="/" element={<Hero />} />
         <Route path="/account" element={<Account />} />
         <Route path="/readings" element={<Readings />} />
+        <Route path="/contacts" element={<Contacts />} />
       </Routes>
     </div>
   );
