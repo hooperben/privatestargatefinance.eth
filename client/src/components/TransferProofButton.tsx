@@ -148,13 +148,40 @@ export function TransferProofButton() {
         root: "4221110344891604176205088962198904729260430126413313722462390172704999703195",
 
         // Input notes (3 slots, first one used)
-        input_notes: [inputNote, emptyInputNote, emptyInputNote],
+        input_notes: [
+          {
+            asset_id: inputNote.asset_id.toString(),
+            asset_amount: inputNote.asset_amount.toString(),
+            owner: inputNote.owner.toString(),
+            owner_secret: inputNote.owner_secret.toString(),
+            secret: inputNote.secret.toString(),
+            leaf_index: inputNote.leaf_index.toString(),
+            path: inputNote.path.map((p) => p.toString()),
+            path_indices: inputNote.path_indices.map((p) => p.toString()),
+          },
+          emptyInputNote,
+          emptyInputNote,
+        ],
 
         // Nullifiers
         nullifiers: [nullifier.toString(), "0", "0"],
 
         // Output notes
-        output_notes: [aliceChangeNote, bobNote, emptyOutputNote],
+        output_notes: [
+          {
+            owner: aliceChangeNote.owner.toString(),
+            secret: aliceChangeNote.secret.toString(),
+            asset_id: aliceChangeNote.asset_id.toString(),
+            asset_amount: aliceChangeNote.asset_amount.toString(),
+          },
+          {
+            owner: bobNote.owner.toString(),
+            secret: bobNote.secret.toString(),
+            asset_id: bobNote.asset_id.toString(),
+            asset_amount: bobNote.asset_amount.toString(),
+          },
+          emptyOutputNote,
+        ],
 
         // Output hashes
         output_hashes: [

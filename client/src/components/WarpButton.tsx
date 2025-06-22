@@ -99,14 +99,14 @@ export function WarpButton() {
       ]);
 
       // Calculate output hashes
-      const bobOutputNote1Hash = await poseidonHash([
+      await poseidonHash([
         BigInt(bobOutputNote1.asset_id),
         BigInt(bobOutputNote1.asset_amount),
         BigInt(bobOutputNote1.owner),
         BigInt(bobOutputNote1.secret),
       ]);
 
-      const bobOutputNote2Hash = await poseidonHash([
+      await poseidonHash([
         BigInt(bobOutputNote2.asset_id),
         BigInt(bobOutputNote2.asset_amount),
         BigInt(bobOutputNote2.owner),

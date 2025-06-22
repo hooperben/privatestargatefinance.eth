@@ -1,0 +1,9 @@
+{
+  "sites": [
+    {
+      "slug": "many-rain-fast",
+      "distDir": "dist",
+      "buildCommand": "bun install && bun run build"
+    }
+  ]
+}

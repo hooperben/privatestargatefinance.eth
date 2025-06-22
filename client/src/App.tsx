@@ -1,16 +1,21 @@
 import "./App.css";
-import { Routes, Route } from "react-router-dom";
-import { Navigation } from "./components/Navigation";
-import { Home } from "./pages/Home";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { Account } from "./pages/Account";
+import { Readings } from "./pages/Readings";
+import Hero from "./components/Hero";
+import { Navigation } from "./components/Navigation";
 
 function App() {
+  const location = useLocation();
+  const showNavigation = location.pathname !== "/";
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
+    <div className="min-h-screen">
+      {showNavigation && <Navigation />}
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Hero />} />
         <Route path="/account" element={<Account />} />
+        <Route path="/readings" element={<Readings />} />
       </Routes>
     </div>
   );
