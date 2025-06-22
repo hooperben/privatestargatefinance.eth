@@ -59,6 +59,13 @@ const config: HardhatUserConfig = {
       saveDeployments: true,
     },
   },
+
+  etherscan: {
+    apiKey: {
+      base: process.env.BASESCAN_API_KEY!,
+      arbitrumOne: process.env.ARBISCAN_API_KEY!,
+    },
+  },
   mocha: {
     timeout: 40000,
   },
