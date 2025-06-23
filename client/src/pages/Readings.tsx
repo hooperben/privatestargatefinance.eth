@@ -22,6 +22,8 @@ export function Readings() {
           Still to document
         </h1>
 
+        <p className="ml-2">- note addition/sub</p>
+
         <p className="ml-2">- note sharing</p>
         <p className="ml-2">- account structure</p>
         <p className="ml-2">- lz/stargate flow</p>
