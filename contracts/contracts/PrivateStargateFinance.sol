@@ -15,6 +15,8 @@ import {IStargatePool} from "./IStargatePool.sol";
 import "./PrivateStargateOApp.sol";
 import "./StargateSenderBase.sol";
 
+import "hardhat/console.sol";
+
 uint256 constant NOTES_INPUT_LENGTH = 3;
 uint256 constant EXIT_ASSET_START_INDEX = 4;
 uint256 constant EXIT_AMOUNT_START_INDEX = 7;
@@ -53,6 +55,31 @@ contract PrivateStargateFinance is
 
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(DEPOSIT_ROLE, msg.sender);
+    }
+
+    uint8 DECIMAL_PRECISION = 6;
+
+    function decimalCheck(uint256 _amount, address _erc20) public {
+        uint8 decimals = ERC20(_erc20).decimals();
+
+        console.log(decimals);
+
+        uint256 depositAmount = _amount;
+
+        if (decimals != DECIMAL_PRECISION) {
+            if (decimals > DECIMAL_PRECISION) {
+                uint256 parsedAmount = (_amount) *
+                    10 ** (decimals - DECIMAL_PRECISION);
+                depositAmount = parsedAmount;
+            } else {
+                uint256 expToSubtract = 1 *
+                    10 ** (DECIMAL_PRECISION - decimals);
+                console.log(expToSubtract);
+                depositAmount = _amount / expToSubtract;
+            }
+        }
+
+        console.log(depositAmount);
     }
 
     function deposit(

@@ -67,11 +67,15 @@ export const deployMockTokens = async () => {
     zeroPadValue(await lzOFTDeploymentBase.getAddress(), 32),
   );
 
+  const FourDecFactory = await ethers.getContractFactory("FourDEC");
+  const fourDecDeployment = await FourDecFactory.deploy();
+
   return {
     usdcDeployment,
     lzOFTDeploymentBase,
     lzOFTDeploymentRemote,
     baseEndpoint,
     remoteEndpoint,
+    fourDecDeployment,
   };
 };

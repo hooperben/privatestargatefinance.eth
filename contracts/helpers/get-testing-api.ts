@@ -26,6 +26,7 @@ export const getTestingAPI = async () => {
     remoteEndpoint,
     lzOFTDeploymentBase,
     lzOFTDeploymentRemote,
+    fourDecDeployment,
   } = await deployMockTokens();
 
   const basePSF = (await deployPSF(
@@ -79,6 +80,7 @@ export const getTestingAPI = async () => {
 
   return {
     usdcDeployment,
+    fourDecDeployment,
     lzOFTDeploymentBase,
     lzOFTDeploymentRemote,
     depositNoir,
