@@ -80,6 +80,8 @@ contract PrivateStargateFinance is
         }
 
         console.log(depositAmount);
+
+        ERC20(_erc20).transferFrom(msg.sender, address(this), depositAmount);
     }
 
     function deposit(
