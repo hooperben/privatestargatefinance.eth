@@ -6,9 +6,7 @@ a UI and account model for interacting with the Private Stargate Finance protoco
 
 the `circuits` and `contracts` were taken from the head of [this repo](https://github.com/hooperben/private-stargate-finance). At the time of forking, I'm pretty confident the core protocol of Private Stargate finance is done, with the note(haha)able exception of:
 
-- note sharing
 - actual mainnet tx(s) with stargate assets
-- account model scrutinised
 - recursive merkle tree data structure implementation
 
 ### Repository Structure
